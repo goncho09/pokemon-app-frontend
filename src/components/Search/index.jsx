@@ -1,27 +1,28 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { FaMagnifyingGlass } from "react-icons/fa6";
+import Pokemon from "../Pokemon/Pokemon";
 
 export default function Search() {
   const [search, setSearch] = useState("");
   const [error, setError] = useState(false);
-  const router = useRouter();
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [pokemon, setPokemon] = useState({});
 
   async function onSubmit(event) {
     event.preventDefault();
     const linkToFetch = `http://localhost:3000/api/pokemon/${search}`;
-    const response = await fetch(linkToFetch, {
-      method: "GET",
-    });
+    const response = await fetch(linkToFetch, { method: "GET" });
 
-    if (response.status != 200) {
-      console.log("error");
-      setError(true);
-    } else setError(false);
-    const data = await response.json();
-    // router.push('/pokemon',{query});
+    if (response.ok) {
+      setPokemon(await response.json());
+      setError(false);
+      setIsSubmitted(true);
+      return;
+    }
+
+    setError(true);
   }
 
   return (
@@ -45,7 +46,10 @@ export default function Search() {
           <FaMagnifyingGlass />
         </button>
       </div>
+
       {error && <h3 className="mt-4 bold text-lg">¡Este pokemon no existe!</h3>}
+
+      {isSubmitted && <Pokemon pokemon={pokemon} className="mt-5" />}
     </form>
   );
 }
